@@ -1,0 +1,625 @@
+{
+    "apps": {
+        "http": {
+            "servers": {
+                "srv0": {
+                    "listen": [
+                        ":443"
+                    ],
+                    "logs": {
+                        "default_logger_name": "log4",
+                        "logger_names": {
+                            "*.oricode.com": "log2",
+                            "*.redo.oricode.com": "log3",
+                            "app.oricode.com": "log1",
+                            "oricode.com": "log0",
+                            "redo.oricode.com": "log1",
+                            "www.oricode.com": "log1"
+                        }
+                    },
+                    "routes": [
+                        {
+                            "handle": [
+                                {
+                                    "handler": "subroute",
+                                    "routes": [
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "vars",
+                                                    "root": "/srv/apps/starter/public"
+                                                },
+                                                {
+                                                    "encodings": {
+                                                        "gzip": {}
+                                                    },
+                                                    "handler": "encode",
+                                                    "prefer": [
+                                                        "gzip"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "static_response",
+                                                    "headers": {
+                                                        "Location": [
+                                                            "{http.request.orig_uri.path}/"
+                                                        ]
+                                                    },
+                                                    "status_code": 308
+                                                }
+                                            ],
+                                            "match": [
+                                                {
+                                                    "file": {
+                                                        "try_files": [
+                                                            "{http.request.uri.path}/index.php"
+                                                        ]
+                                                    },
+                                                    "not": [
+                                                        {
+                                                            "path": [
+                                                                "*/"
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "rewrite",
+                                                    "uri": "{http.matchers.file.relative}"
+                                                }
+                                            ],
+                                            "match": [
+                                                {
+                                                    "file": {
+                                                        "split_path": [
+                                                            ".php"
+                                                        ],
+                                                        "try_files": [
+                                                            "{http.request.uri.path}",
+                                                            "{http.request.uri.path}/index.php",
+                                                            "index.php"
+                                                        ]
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "reverse_proxy",
+                                                    "transport": {
+                                                        "protocol": "fastcgi",
+                                                        "split_path": [
+                                                            ".php"
+                                                        ]
+                                                    },
+                                                    "upstreams": [
+                                                        {
+                                                            "dial": "php:9000"
+                                                        }
+                                                    ]
+                                                }
+                                            ],
+                                            "match": [
+                                                {
+                                                    "path": [
+                                                        "*.php"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "file_server",
+                                                    "hide": [
+                                                        "/etc/caddy/Caddyfile"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ],
+                            "match": [
+                                {
+                                    "host": [
+                                        "www.oricode.com",
+                                        "app.oricode.com",
+                                        "redo.oricode.com"
+                                    ]
+                                }
+                            ],
+                            "terminal": true
+                        },
+                        {
+                            "handle": [
+                                {
+                                    "handler": "subroute",
+                                    "routes": [
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "static_response",
+                                                    "headers": {
+                                                        "Location": [
+                                                            "https://www.{http.request.host}{http.request.uri}"
+                                                        ]
+                                                    },
+                                                    "status_code": 302
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ],
+                            "match": [
+                                {
+                                    "host": [
+                                        "oricode.com"
+                                    ]
+                                }
+                            ],
+                            "terminal": true
+                        },
+                        {
+                            "handle": [
+                                {
+                                    "handler": "subroute",
+                                    "routes": [
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "vars",
+                                                    "root": "/srv/apps/starter/public"
+                                                },
+                                                {
+                                                    "encodings": {
+                                                        "gzip": {}
+                                                    },
+                                                    "handler": "encode",
+                                                    "prefer": [
+                                                        "gzip"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "static_response",
+                                                    "headers": {
+                                                        "Location": [
+                                                            "{http.request.orig_uri.path}/"
+                                                        ]
+                                                    },
+                                                    "status_code": 308
+                                                }
+                                            ],
+                                            "match": [
+                                                {
+                                                    "file": {
+                                                        "try_files": [
+                                                            "{http.request.uri.path}/index.php"
+                                                        ]
+                                                    },
+                                                    "not": [
+                                                        {
+                                                            "path": [
+                                                                "*/"
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "rewrite",
+                                                    "uri": "{http.matchers.file.relative}"
+                                                }
+                                            ],
+                                            "match": [
+                                                {
+                                                    "file": {
+                                                        "split_path": [
+                                                            ".php"
+                                                        ],
+                                                        "try_files": [
+                                                            "{http.request.uri.path}",
+                                                            "{http.request.uri.path}/index.php",
+                                                            "index.php"
+                                                        ]
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "reverse_proxy",
+                                                    "transport": {
+                                                        "protocol": "fastcgi",
+                                                        "split_path": [
+                                                            ".php"
+                                                        ]
+                                                    },
+                                                    "upstreams": [
+                                                        {
+                                                            "dial": "php:9000"
+                                                        }
+                                                    ]
+                                                }
+                                            ],
+                                            "match": [
+                                                {
+                                                    "path": [
+                                                        "*.php"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "file_server",
+                                                    "hide": [
+                                                        "/etc/caddy/Caddyfile"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ],
+                            "match": [
+                                {
+                                    "host": [
+                                        "*.redo.oricode.com"
+                                    ]
+                                }
+                            ],
+                            "terminal": true
+                        },
+                        {
+                            "handle": [
+                                {
+                                    "handler": "subroute",
+                                    "routes": [
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "vars",
+                                                    "root": "/srv/apps/starter/public"
+                                                },
+                                                {
+                                                    "encodings": {
+                                                        "gzip": {}
+                                                    },
+                                                    "handler": "encode",
+                                                    "prefer": [
+                                                        "gzip"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "static_response",
+                                                    "headers": {
+                                                        "Location": [
+                                                            "{http.request.orig_uri.path}/"
+                                                        ]
+                                                    },
+                                                    "status_code": 308
+                                                }
+                                            ],
+                                            "match": [
+                                                {
+                                                    "file": {
+                                                        "try_files": [
+                                                            "{http.request.uri.path}/index.php"
+                                                        ]
+                                                    },
+                                                    "not": [
+                                                        {
+                                                            "path": [
+                                                                "*/"
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "rewrite",
+                                                    "uri": "{http.matchers.file.relative}"
+                                                }
+                                            ],
+                                            "match": [
+                                                {
+                                                    "file": {
+                                                        "split_path": [
+                                                            ".php"
+                                                        ],
+                                                        "try_files": [
+                                                            "{http.request.uri.path}",
+                                                            "{http.request.uri.path}/index.php",
+                                                            "index.php"
+                                                        ]
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "reverse_proxy",
+                                                    "transport": {
+                                                        "protocol": "fastcgi",
+                                                        "split_path": [
+                                                            ".php"
+                                                        ]
+                                                    },
+                                                    "upstreams": [
+                                                        {
+                                                            "dial": "php:9000"
+                                                        }
+                                                    ]
+                                                }
+                                            ],
+                                            "match": [
+                                                {
+                                                    "path": [
+                                                        "*.php"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "file_server",
+                                                    "hide": [
+                                                        "/etc/caddy/Caddyfile"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ],
+                            "match": [
+                                {
+                                    "host": [
+                                        "*.oricode.com"
+                                    ]
+                                }
+                            ],
+                            "terminal": true
+                        },
+                        {
+                            "handle": [
+                                {
+                                    "handler": "subroute",
+                                    "routes": [
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "vars",
+                                                    "root": "/srv/apps/starter/public"
+                                                },
+                                                {
+                                                    "encodings": {
+                                                        "gzip": {}
+                                                    },
+                                                    "handler": "encode",
+                                                    "prefer": [
+                                                        "gzip"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "static_response",
+                                                    "headers": {
+                                                        "Location": [
+                                                            "{http.request.orig_uri.path}/"
+                                                        ]
+                                                    },
+                                                    "status_code": 308
+                                                }
+                                            ],
+                                            "match": [
+                                                {
+                                                    "file": {
+                                                        "try_files": [
+                                                            "{http.request.uri.path}/index.php"
+                                                        ]
+                                                    },
+                                                    "not": [
+                                                        {
+                                                            "path": [
+                                                                "*/"
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "rewrite",
+                                                    "uri": "{http.matchers.file.relative}"
+                                                }
+                                            ],
+                                            "match": [
+                                                {
+                                                    "file": {
+                                                        "split_path": [
+                                                            ".php"
+                                                        ],
+                                                        "try_files": [
+                                                            "{http.request.uri.path}",
+                                                            "{http.request.uri.path}/index.php",
+                                                            "index.php"
+                                                        ]
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "reverse_proxy",
+                                                    "transport": {
+                                                        "protocol": "fastcgi",
+                                                        "split_path": [
+                                                            ".php"
+                                                        ]
+                                                    },
+                                                    "upstreams": [
+                                                        {
+                                                            "dial": "php:9000"
+                                                        }
+                                                    ]
+                                                }
+                                            ],
+                                            "match": [
+                                                {
+                                                    "path": [
+                                                        "*.php"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "handle": [
+                                                {
+                                                    "handler": "file_server",
+                                                    "hide": [
+                                                        "/etc/caddy/Caddyfile"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ],
+                            "terminal": true
+                        }
+                    ]
+                }
+            }
+        },
+        "tls": {
+            "automation": {
+                "policies": [
+                    {
+                        "issuers": [
+                            {
+                                "challenges": {
+                                    "dns": {
+                                        "provider": {
+                                            "api_token": "{env.CLOUDFLARE_API_TOKEN}",
+                                            "name": "cloudflare"
+                                        }
+                                    }
+                                },
+                                "email": "{env.CLOUDFLARE_API_MAIL}",
+                                "module": "acme"
+                            },
+                            {
+                                "challenges": {
+                                    "dns": {
+                                        "provider": {
+                                            "api_token": "{env.CLOUDFLARE_API_TOKEN}",
+                                            "name": "cloudflare"
+                                        }
+                                    }
+                                },
+                                "email": "{env.CLOUDFLARE_API_MAIL}",
+                                "module": "zerossl"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    "logging": {
+        "logs": {
+            "default": {
+                "exclude": [
+                    "http.log.access.log0",
+                    "http.log.access.log1",
+                    "http.log.access.log2",
+                    "http.log.access.log3",
+                    "http.log.access.log4"
+                ]
+            },
+            "log0": {
+                "include": [
+                    "http.log.access.log0"
+                ],
+                "writer": {
+                    "filename": "/var/log/caddy/access_oricode_redirection.log",
+                    "output": "file"
+                }
+            },
+            "log1": {
+                "include": [
+                    "http.log.access.log1"
+                ],
+                "writer": {
+                    "filename": "/var/log/caddy/access_oricode_subdomain.log",
+                    "output": "file"
+                }
+            },
+            "log2": {
+                "include": [
+                    "http.log.access.log2"
+                ],
+                "writer": {
+                    "filename": "/var/log/caddy/access_oricode_tenant_subdomain.log",
+                    "output": "file"
+                }
+            },
+            "log3": {
+                "include": [
+                    "http.log.access.log3"
+                ],
+                "writer": {
+                    "filename": "/var/log/caddy/access_oricode_server_subdomain.log",
+                    "output": "file"
+                }
+            },
+            "log4": {
+                "include": [
+                    "http.log.access.log4"
+                ],
+                "writer": {
+                    "filename": "/var/log/caddy/access_oricode_443.log",
+                    "output": "file"
+                }
+            }
+        }
+    }
+}
+
+

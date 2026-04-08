@@ -1,0 +1,194 @@
+# Enable on-demand TLS and verify the domain through an HTTP request
+{
+    acme_dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+    email {env.CLOUDFLARE_API_MAIL_PRIMARY}
+
+    on_demand_tls {
+        ask https://www.oricode.com/domain-verify
+    }
+}
+
+# Define a reusable block for Cloudflare TLS settings
+(cloudflare) {
+    tls {
+        dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+    }
+}
+
+
+/*---------------------------------------------------------------------
+|  Name: Whatsapp Sender API
+|
+|  Features:
+*-------------------------------------------------------------------*/
+
+# Define a reusable block for web application settings
+(oricode) {
+    # Set root directory, configure PHP FastCGI, enable file serving, and enable gzip encoding
+    root * /srv/apps/starter/public
+    php_fastcgi php:9000
+    file_server
+    encode gzip
+}
+
+# Redirect requests for Shiropulse API Server to https://shirowapi.oricodes.com
+shirowapi.oricodes.com {
+    log {
+        output file /var/log/caddy/access_oricode_redirection.log
+    }
+
+    redir https://www.{host}{uri}
+}
+
+# Define a reusable block for web application settings
+(shiropulse) {
+    # Set root directory, configure PHP FastCGI, enable file serving, and enable gzip encoding
+    root * /srv/apps/marketing/public
+    php_fastcgi php:9000
+    file_server
+    encode gzip
+}
+
+# Handle wildcard subdomains for oricode.com
+shiropulse.oricodes.com {
+    import cloudflare
+
+    # Log requests for subdomains
+    log {
+        output file /var/log/caddy/access_shiropulse_subdomain.log
+    }
+
+    import shiropulse
+}
+
+
+
+/*---------------------------------------------------------------------
+|  Name: Oricode
+|
+|  Features:
+|  - Redirect requests for oricode.com to https://www.oricode.com
+|  - Handle wildcard subdomains for oricode.com
+|  - Handle wildcard subdomains for *.oricode.com
+|  - Handle wildcard subdomains for *.redo.oricode.com
+|  - TLS configuration for HTTPS on port 443
+|  - Redirect HTTP requests to HTTPS
+*-------------------------------------------------------------------*/
+
+# Define a reusable block for web application settings
+(oricode) {
+    # Set root directory, configure PHP FastCGI, enable file serving, and enable gzip encoding
+    root * /srv/apps/starter/public
+    php_fastcgi php:9000
+    file_server
+    encode gzip
+}
+
+# Redirect requests for oricode.com to www.oricode.com
+oricode.com {
+    log {
+        output file /var/log/caddy/access_oricode_redirection.log
+    }
+
+    redir https://www.{host}{uri}
+}
+
+# Handle wildcard subdomains for oricode.com
+www.oricode.com {
+    import cloudflare
+
+    # Log requests for subdomains
+    log {
+        output file /var/log/caddy/access_oricode_subdomain.log
+    }
+
+    import oricode
+}
+
+# Handle wildcard subdomains for oricode.com
+app.oricode.com {
+    import cloudflare
+
+    # Log requests for subdomains
+    log {
+        output file /var/log/caddy/access_oricode_subdomain.log
+    }
+
+    import oricode
+}
+
+# Handle wildcard subdomains for oricode.com
+redo.oricode.com {
+    import cloudflare
+
+    # Log requests for subdomains
+    log {
+        output file /var/log/caddy/access_oricode_subdomain.log
+    }
+
+    import oricode
+}
+
+# Handle wildcard subdomains for *.oricode.com
+*.oricode.com {
+    import cloudflare
+
+    # Log requests for subdomains
+    log {
+        output file /var/log/caddy/access_oricode_tenant_subdomain.log
+    }
+
+    import oricode
+}
+
+# Handle wildcard subdomains for *.redo.oricode.com
+*.redo.oricode.com {
+    import cloudflare
+
+    # Log requests for subdomains
+    log {
+        output file /var/log/caddy/access_oricode_server_subdomain.log
+    }
+
+    import oricode
+}
+
+# Redirect HTTP requests to HTTPS
+http:// {
+    log {
+        output file /var/log/caddy/access_oricode_http_redirection.log
+    }
+
+  	redir https://{host}{uri}
+}
+
+# TLS configuration for HTTPS on port 443
+https:// {
+    tls {
+        on_demand
+    }
+
+    import cloudflare
+
+    # Log requests for subdomains
+    log {
+        output file /var/log/caddy/access_oricode_server_tenant_pointed_domain_https.log
+    }
+
+    import oricode
+}
+
+# TLS configuration for HTTPS on port 443
+:443 {
+    tls {
+        on_demand
+    }
+
+    import cloudflare
+
+    log {
+        output file /var/log/caddy/access_oricode_443.log
+    }
+
+    import oricode
+}

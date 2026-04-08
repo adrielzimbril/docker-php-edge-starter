@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    ports:
+      - "80:80"               # Mapper le port 80 de l'hôte vers le conteneur
+      - "443:443"             # Mapper le port 443 pour HTTPS
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile  # Monter le Caddyfile
+      - caddy_data:/data      # Volume pour stocker les données de Caddy (certificats SSL, etc.)
+      - caddy_config:/config  # Volume pour stocker la configuration de Caddy
+    networks:
+      - kendo_network
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  kendo_network:
+    external: true  # Utilise le même réseau que votre application PHP
