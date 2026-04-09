@@ -1,6 +1,6 @@
-# 🚀 Oricode Docker Starter
+# Oricode Docker Starter
 
-Complete, reusable Docker infrastructure for a PHP web application with HTTPS reverse proxying, database, cache, scheduled jobs, and optional remote tunnel routing.
+Reusable Docker infrastructure starter for PHP applications with Caddy as the edge proxy, automated HTTPS, MySQL, Redis, cron jobs, and optional Cloudflare Tunnel support. Designed for local development, staging, and self-hosted deployments.
 
 [Documentation francaise](./README.md)
 
